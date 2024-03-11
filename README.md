@@ -1,7 +1,7 @@
-# Slot machine OOP project
+# Voievozi si domnitori
 
 ### Descriere
-Un simplu joc ______, in stilul _____.
+Un simplu joc turn-based, in stilul Hearthstone, dar cu domnitori si voievozi precum Mihai Viteazul, Stefan cel Mare sau Vlad Tepes. O varianta ar fi o combinatie intre Rome: Total War si Hearthstone, dar forma finala a jocului inca nu este << batuta in cuie >>. Goal-ul este sa implementez 2 moduri de joc: PvP intre 2 playeri, sau PvE (Player vs. Computer).
 
 ### Important!
 Aveți voie cu cod generat de modele de limbaj la care nu ați contribuit semnificativ doar în folder-ul `generated`.
