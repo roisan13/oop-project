@@ -1,8 +1,11 @@
 #include <iostream>
+#include <utility>
 #include <vector>
 #include <string>
 
 class Voievod;
+
+
 class Spell{
 private:
     std::string name;
@@ -10,7 +13,7 @@ private:
     int critChance;  // critchance/100
 
 public:
-    Spell(const std::string &name, int baseDamage, int critChance) : name(name), baseDamage(baseDamage),
+    Spell(std::string name, int baseDamage, int critChance) : name(std::move(name)), baseDamage(baseDamage),
                                                                      critChance(critChance) {}
 
 
@@ -18,21 +21,24 @@ public:
         std::cout << "Spell destr\n";
     }
 
-    friend void useSpell(const Spell& spell_, Voievod& enemy){
-
+    [[nodiscard]] int evalDamage() const{                 //TODO implement random library
+        if (rand() % 101 > critChance)
+            return baseDamage;
+        else return 2 * baseDamage;
     }
 
 
     friend std::ostream &operator<<(std::ostream &os, const Spell &spell) {
-        os << "name: " << spell.name << " baseDamage: " << spell.baseDamage << " critChance: " << spell.critChance << '\n';
+        os << spell.name;
+
+        // Default os
+        // os << "name: " << spell.name << " baseDamage: " << spell.baseDamage << " critChance: " << spell.critChance << '\n';
         return os;
     }
 
 };
 
-class VoievodAttack : public Spell{
-
-};
+/// class VoievodAttack : public Spell{};
 
 class Voievod {
 private:
@@ -53,6 +59,7 @@ public:
         std::cout << "Voievod destr\n";
     }
 
+
     Voievod& operator=(const Voievod&) = default;
 
 
@@ -62,6 +69,15 @@ public:
            << voievod.healthPoints << '\n';
         return os;
     };
+
+    void printSpells(){
+        for (unsigned int i = 0; i < spells.size(); ++i)
+            std::cout << i + 1 << ". " << spells[i] << '\n';
+    }
+
+    void useSpell(int spellIndex, Voievod& enemy){     //TODO implement spell use
+        enemy.healthPoints -= spells[spellIndex].evalDamage();
+    }
 };
 
 class Game{
@@ -72,6 +88,8 @@ private:
 public:
     void play(){
         std::cout << "The game has started!\n";
+        std::cout << voievod1 << "\n" << voievod2 << "\n";
+
     };
 
     Game(const Voievod &voievod1, const Voievod &voievod2) : voievod1(voievod1), voievod2(voievod2) {}
@@ -96,6 +114,10 @@ int main() {
     Game game = Game(v1, v2);
 
     game.play();
+
+    v1.printSpells();
+    v1.useSpell(1, v2);
+    std::cout << v2;
 
     return 0;
 }
