@@ -1,57 +1,101 @@
 #include <iostream>
-#include <array>
+#include <vector>
+#include <string>
 
-#include <Helper.h>
+class Voievod;
+class Spell{
+private:
+    std::string name;
+    int baseDamage;
+    int critChance;  // critchance/100
+
+public:
+    Spell(const std::string &name, int baseDamage, int critChance) : name(name), baseDamage(baseDamage),
+                                                                     critChance(critChance) {}
+
+
+    virtual ~Spell() {
+        std::cout << "Spell destr\n";
+    }
+
+    friend void useSpell(const Spell& spell_, Voievod& enemy){
+
+    }
+
+
+    friend std::ostream &operator<<(std::ostream &os, const Spell &spell) {
+        os << "name: " << spell.name << " baseDamage: " << spell.baseDamage << " critChance: " << spell.critChance << '\n';
+        return os;
+    }
+
+};
+
+class VoievodAttack : public Spell{
+
+};
+
+class Voievod {
+private:
+    std::string name;
+    int strength;
+    int healthPoints;
+    std::vector<Spell> spells;
+
+public:
+    Voievod(std::string name_, int strength_, int healthPoints_, const std::vector<Spell> &spells_) : name(std::move(name_)),
+                                                                                                         strength(
+                                                                                                                 strength_),
+                                                                                                         healthPoints(
+                                                                                                                 healthPoints_),
+                                                                                                         spells(spells_) {}
+
+    virtual ~Voievod() {
+        std::cout << "Voievod destr\n";
+    }
+
+    Voievod& operator=(const Voievod&) = default;
+
+
+
+    friend std::ostream &operator<<(std::ostream &os, const Voievod &voievod) {
+        os << "name: " << voievod.name << " strength: " << voievod.strength << " healthPoints: "
+           << voievod.healthPoints << '\n';
+        return os;
+    };
+};
+
+class Game{
+private:
+    Voievod voievod1, voievod2;
+
+
+public:
+    void play(){
+        std::cout << "The game has started!\n";
+    };
+
+    Game(const Voievod &voievod1, const Voievod &voievod2) : voievod1(voievod1), voievod2(voievod2) {}
+
+    virtual ~Game() {
+        std::cout << "Game destr\n";
+    }
+};
+
+
 
 int main() {
-    std::cout << "Hello, world!\n";
-    std::array<int, 100> v{};
-    int nr;
-    std::cout << "Introduceți nr: ";
-    /////////////////////////////////////////////////////////////////////////
-    /// Observație: dacă aveți nevoie să citiți date de intrare de la tastatură,
-    /// dați exemple de date de intrare folosind fișierul tastatura.txt
-    /// Trebuie să aveți în fișierul tastatura.txt suficiente date de intrare
-    /// (în formatul impus de voi) astfel încât execuția programului să se încheie.
-    /// De asemenea, trebuie să adăugați în acest fișier date de intrare
-    /// pentru cât mai multe ramuri de execuție.
-    /// Dorim să facem acest lucru pentru a automatiza testarea codului, fără să
-    /// mai pierdem timp de fiecare dată să introducem de la zero aceleași date de intrare.
-    ///
-    /// Pe GitHub Actions (bife), fișierul tastatura.txt este folosit
-    /// pentru a simula date introduse de la tastatură.
-    /// Bifele verifică dacă programul are erori de compilare, erori de memorie și memory leaks.
-    ///
-    /// Dacă nu puneți în tastatura.txt suficiente date de intrare, îmi rezerv dreptul să vă
-    /// testez codul cu ce date de intrare am chef și să nu pun notă dacă găsesc vreun bug.
-    /// Impun această cerință ca să învățați să faceți un demo și să arătați părțile din
-    /// program care merg (și să le evitați pe cele care nu merg).
-    ///
-    /////////////////////////////////////////////////////////////////////////
-    std::cin >> nr;
-    /////////////////////////////////////////////////////////////////////////
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "v[" << i << "] = ";
-        std::cin >> v[i];
-    }
-    std::cout << "\n\n";
-    std::cout << "Am citit de la tastatură " << nr << " elemente:\n";
-    for(int i = 0; i < nr; ++i) {
-        std::cout << "- " << v[i] << "\n";
-    }
-    ///////////////////////////////////////////////////////////////////////////
-    /// Pentru date citite din fișier, NU folosiți tastatura.txt. Creați-vă voi
-    /// alt fișier propriu cu ce alt nume doriți.
-    /// Exemplu:
-    /// std::ifstream fis("date.txt");
-    /// for(int i = 0; i < nr2; ++i)
-    ///     fis >> v2[i];
-    ///
-    ///////////////////////////////////////////////////////////////////////////
-    ///                Exemplu de utilizare cod generat                     ///
-    ///////////////////////////////////////////////////////////////////////////
-    Helper helper;
-    helper.help();
-    ///////////////////////////////////////////////////////////////////////////
+
+    Spell basicAttack = Spell("Basic Attack", 5, 20);
+    Spell powerfulAttack = Spell("Powerful Attack", 10, 10);
+
+    std::vector<Spell> basicSpells = {basicAttack, powerfulAttack};
+
+    Voievod v1 = Voievod("Michael The Brave", 89, 30, basicSpells);
+    Voievod v2 = Voievod("Vlad The Impaler", 93, 30, basicSpells);
+
+    Game game = Game(v1, v2);
+
+    game.play();
+
     return 0;
 }
