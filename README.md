@@ -1,7 +1,7 @@
 # Slot machine OOP project
 
-# Descriere
-Un simplu simulator de jocuri de noroc ("păcănele").
+### Descriere
+Un simplu joc ______, in stilul _____.
 
 ### Important!
 Aveți voie cu cod generat de modele de limbaj la care nu ați contribuit semnificativ doar în folder-ul `generated`.
