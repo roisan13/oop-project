@@ -2,6 +2,7 @@
 #include <utility>
 #include <vector>
 #include <string>
+#include "random.hpp"
 
 class Voievod;
 
@@ -17,12 +18,10 @@ public:
                                                                      critChance(critChance) {}
 
 
-    virtual ~Spell() {
-        std::cout << "Spell destr\n";
-    }
+    virtual ~Spell() = default;
 
-    [[nodiscard]] int evalDamage() const{                 //TODO implement random library
-        if (rand() % 101 > critChance)
+    [[nodiscard]] int evalDamage() const{
+        if ( effolkronium::random_static::get(1, 100) > critChance)
             return baseDamage;
         else return 2 * baseDamage;
     }
@@ -55,9 +54,7 @@ public:
                                                                                                                  healthPoints_),
                                                                                                          spells(spells_) {}
 
-    virtual ~Voievod() {
-        std::cout << "Voievod destr\n";
-    }
+    virtual ~Voievod() = default;
 
 
     Voievod& operator=(const Voievod&) = default;
@@ -65,8 +62,7 @@ public:
 
 
     friend std::ostream &operator<<(std::ostream &os, const Voievod &voievod) {
-        os << "name: " << voievod.name << " strength: " << voievod.strength << " healthPoints: "
-           << voievod.healthPoints << '\n';
+        os << voievod.name << " strength: " << voievod.strength << " healthPoints: " << voievod.healthPoints << '\n';
         return os;
     };
 
@@ -75,7 +71,11 @@ public:
             std::cout << i + 1 << ". " << spells[i] << '\n';
     }
 
-    void useSpell(int spellIndex, Voievod& enemy){     //TODO implement spell use
+    [[nodiscard]] bool isAlive() const{
+        return (healthPoints > 0);
+    }
+
+    void useSpell(int spellIndex, Voievod& enemy){
         enemy.healthPoints -= spells[spellIndex].evalDamage();
     }
 };
@@ -87,15 +87,34 @@ private:
 
 public:
     void play(){
-        std::cout << "The game has started!\n";
-        std::cout << voievod1 << "\n" << voievod2 << "\n";
+        std::cout << "The game has started! \n";
+        std::cout << "Voievod 1: " << voievod1 << "\n" << "Voievod 2: " <<  voievod2 << "\n";
+
+        while(voievod1.isAlive() && voievod2.isAlive()){
+
+            std::cout << "Voievod1, choose your spell:\n";
+            voievod1.printSpells();
+            int spellIndex_;
+            std::cin >> spellIndex_;
+            // aici ar trebui un if in care sa se citeasca frumos spellIndex, fara erori
+            voievod1.useSpell(spellIndex_-1, voievod2);
+            std::cout << "It worked! " << voievod2;
+
+            std::cout << "Voievod2, choose your spell:\n";
+            voievod2.printSpells();
+            std::cin >> spellIndex_;
+            // alt if frumos, posibil o functie
+            voievod2.useSpell(spellIndex_-1, voievod1);
+            std::cout << "It worked! " << voievod1;
+
+        }
 
     };
 
     Game(const Voievod &voievod1, const Voievod &voievod2) : voievod1(voievod1), voievod2(voievod2) {}
 
     virtual ~Game() {
-        std::cout << "Game destr\n";
+        std::cout << "\nGame over! \n";
     }
 };
 
@@ -114,10 +133,6 @@ int main() {
     Game game = Game(v1, v2);
 
     game.play();
-
-    v1.printSpells();
-    v1.useSpell(1, v2);
-    std::cout << v2;
 
     return 0;
 }
