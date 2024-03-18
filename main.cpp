@@ -23,7 +23,10 @@ public:
     [[nodiscard]] int evalDamage() const{
         if ( effolkronium::random_static::get(1, 100) > critChance)
             return baseDamage;
-        else return 2 * baseDamage;
+        else {
+            std::cout << "Critical strike! \n";
+            return 2 * baseDamage;
+        }
     }
 
 
@@ -75,8 +78,10 @@ public:
         return (healthPoints > 0);
     }
 
-    void useSpell(int spellIndex, Voievod& enemy){
-        enemy.healthPoints -= spells[spellIndex].evalDamage();
+    void useSpell(unsigned int spellIndex, Voievod& enemy){
+        if ( spellIndex < spells.size() )
+            enemy.healthPoints -= spells[spellIndex].evalDamage();
+        else std::cout << "It didn't work: Wrong spellIndex provided!\n";
     }
 };
 
@@ -94,18 +99,20 @@ public:
 
             std::cout << "Voievod1, choose your spell:\n";
             voievod1.printSpells();
-            int spellIndex_;
-            std::cin >> spellIndex_;
+            int *spellIndex_ = new int;
+            std::cin >> *spellIndex_;
             // aici ar trebui un if in care sa se citeasca frumos spellIndex, fara erori
-            voievod1.useSpell(spellIndex_-1, voievod2);
+            voievod1.useSpell(*spellIndex_-1, voievod2);
             std::cout << "It worked! " << voievod2;
 
             std::cout << "Voievod2, choose your spell:\n";
             voievod2.printSpells();
-            std::cin >> spellIndex_;
+            std::cin >> *spellIndex_;
             // alt if frumos, posibil o functie
-            voievod2.useSpell(spellIndex_-1, voievod1);
+            voievod2.useSpell(*spellIndex_-1, voievod1);
             std::cout << "It worked! " << voievod1;
+
+            delete spellIndex_;
 
         }
 
@@ -124,11 +131,13 @@ int main() {
 
     Spell basicAttack = Spell("Basic Attack", 5, 20);
     Spell powerfulAttack = Spell("Powerful Attack", 10, 10);
+    Spell voievod1specificAttack = Spell("Battle of Calugareni Attack", 15, 40);
+    Spell voievod2specificAttack = Spell("Night Attack at Targoviste", 15, 40);
 
-    std::vector<Spell> basicSpells = {basicAttack, powerfulAttack};
+    /// std::vector<Spell> basicSpells = {basicAttack, powerfulAttack};
 
-    Voievod v1 = Voievod("Michael The Brave", 89, 30, basicSpells);
-    Voievod v2 = Voievod("Vlad The Impaler", 93, 30, basicSpells);
+    Voievod v1 = Voievod("Michael The Brave", 89, 30, {basicAttack, powerfulAttack, voievod1specificAttack});
+    Voievod v2 = Voievod("Vlad The Impaler", 93, 30, {basicAttack, powerfulAttack, voievod2specificAttack});
 
     Game game = Game(v1, v2);
 
