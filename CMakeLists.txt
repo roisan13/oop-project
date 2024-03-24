@@ -69,6 +69,10 @@ endfunction()
 
 # external dependencies with FetchContent
 
+find_package(OpenGL REQUIRED)
+
+
+
 include(FetchContent)
 FetchContent_Declare(SFML
         GIT_REPOSITORY https://github.com/SFML/SFML.git
@@ -158,10 +162,10 @@ endif()
 set_custom_stdlib_and_sanitizers(${PROJECT_NAME} true)
 
 ###############################################################################
-find_package(OpenGL REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 
 target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE OpenGL::GL)
 ###############################################################################
 
 # use SYSTEM so cppcheck/clang-tidy does not report warnings from these directories
