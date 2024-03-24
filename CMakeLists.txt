@@ -74,32 +74,32 @@ FetchContent_Declare(SFML
         GIT_REPOSITORY https://github.com/SFML/SFML.git
         GIT_TAG 2.6.x)
 
-#function(sfml_set_custom_stdlib target)
-#    if(MSVC)
-#        target_compile_options(${target} PRIVATE "$<${debug_mode}:/fsanitize=address>")
-#    elseif(APPLE)
-#    elseif(UNIX)
-#        if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-#            target_compile_options(${target} PRIVATE -stdlib=libc++)
-#            target_link_libraries(${target} PRIVATE "-stdlib=libc++")
-#            if("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "14.")
-#                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
-#                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
-#            elseif("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "13.")
-#                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins>")
-#                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins;-Wl,-rpath,tools/llvm-project/build/lib>")
-#            else()
-#                message("No matching Clang version to add sanitizer flags!")
-#            endif()
-#        endif()
-#    endif()
-#endfunction()
+function(sfml_set_custom_stdlib target)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE "$<${debug_mode}:/fsanitize=address>")
+    elseif(APPLE)
+    elseif(UNIX)
+        if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+            target_compile_options(${target} PRIVATE -stdlib=libc++)
+            target_link_libraries(${target} PRIVATE "-stdlib=libc++")
+            if("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "14.")
+                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+            elseif("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "13.")
+                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins>")
+                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins;-Wl,-rpath,tools/llvm-project/build/lib>")
+            else()
+                message("No matching Clang version to add sanitizer flags!")
+            endif()
+        endif()
+    endif()
+endfunction()
 
 FetchContent_MakeAvailable(SFML)
 
-#sfml_set_custom_stdlib(sfml-system)
-#sfml_set_custom_stdlib(sfml-window)
-#sfml_set_custom_stdlib(sfml-graphics)
+sfml_set_custom_stdlib(sfml-system)
+sfml_set_custom_stdlib(sfml-window)
+sfml_set_custom_stdlib(sfml-graphics)
 
 
 # include(FetchContent)
@@ -165,14 +165,12 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE generated/include)
 # target_link_directories(${PROJECT_NAME} PRIVATE ${<SomeLib>_BINARY_DIR}/lib)
 # target_link_libraries(${PROJECT_NAME} <SomeLib>)
 
-#target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
-#target_link_directories(${PROJECT_NAME} PRIVATE ${SFML_BINARY_DIR}/lib)
 
-# target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/bin)
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include) #
+target_link_directories(${PROJECT_NAME} PRIVATE ${SFML_BINARY_DIR}/lib) #
 target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system)
 
 ###############################################################################
-
 
 # copy binaries to "bin" folder; these are uploaded as artifacts on each release
 # update name in .github/workflows/cmake.yml:29 when changing "bin" name here

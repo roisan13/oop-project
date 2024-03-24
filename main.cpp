@@ -169,7 +169,7 @@ public:
         textHP1.setFont(fontAr);
         textHP2.setFont(fontAr);
         textHP1.setCharacterSize(72);
-        textHP1.setFillColor(sf::Color::Red);
+        // textHP1.setFillColor(sf::Color::Red);
         textHP2.setCharacterSize(72);
         textHP1.setPosition({600.f,350.f});
         textHP2.setPosition({600.f,800.f});
