@@ -3,10 +3,71 @@
 #include <vector>
 #include <string>
 #include <random.hpp>
-
+#include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
+// #include <SFML/Audio.hpp>
 class Voievod;
 
+class Button{
+private:
+    sf::RectangleShape button;
+    sf::Text text;
 
+public:
+    Button()= default;
+    Button(const std::string& t, sf::Font &font, sf::Vector2f size, sf::Color bgColor){
+
+        text.setString(t);
+        text.setCharacterSize(24);
+        text.setFont(font);
+
+        button.setSize(size);
+        button.setFillColor(bgColor);
+    }
+
+
+
+    void setBackColor(sf::Color color_){
+        button.setFillColor(color_);
+    }
+
+    /*
+    void setTextColor(sf::Color color_){
+        text.setFillColor(color_);
+    }
+
+    void setFont(sf::Font &font){
+        text.setFont(font);
+    }
+     */
+
+    void setPosition(sf::Vector2f pos){
+        button.setPosition(pos);
+
+        // center button?!
+        float xPos = (pos.x + button.getLocalBounds().width / 2) - (text.getLocalBounds().width / 2);
+        float yPos = (pos.y + button.getLocalBounds().height / 2) - (text.getLocalBounds().height / 2);
+
+        text.setPosition({xPos, yPos});
+    }
+
+    void drawTo(sf::RenderWindow &window) {
+        window.draw(button);
+        window.draw(text);
+    }
+
+    bool isHovered(sf::RenderWindow &window) {
+        float mouseX = float(sf::Mouse::getPosition(window).x);
+        float mouseY = float(sf::Mouse::getPosition(window).y);
+
+        float btnPosX = button.getPosition().x;
+        float btnPosY = button.getPosition().y;
+        float btnRightMargin = btnPosX + button.getLocalBounds().width;
+        float btnDownMargin = btnPosY + button.getLocalBounds().height;
+
+        return (mouseX < btnRightMargin && mouseX > btnPosX && mouseY < btnDownMargin && mouseY > btnPosY);
+    }
+};
 class Spell{
 private:
     std::string name;
@@ -77,6 +138,10 @@ public:
     [[nodiscard]] bool isAlive() const{
         return (healthPoints > 0);
     }
+    void updateHPText(sf::Text &text) const{
+        text.setString(std::to_string(healthPoints));
+
+    }
 
     void useSpell(unsigned int spellIndex, Voievod& enemy){
         if ( spellIndex < spells.size() )
@@ -88,9 +153,150 @@ public:
 class Game{
 private:
     Voievod voievod1, voievod2;
+    sf::Sprite spriteV1, spriteV2;
+    sf::Texture textureV1, textureV2;
 
 
 public:
+    void createWindow(){
+        sf::RenderWindow window(sf::VideoMode(1280, 900), "My first game", sf::Style::Titlebar | sf::Style::Close);
+        sf::Event ev{};
+        sf::Font fontAr;
+        sf::Text textHP1, textHP2;
+        unsigned int gameState;
+        fontAr.loadFromFile("arial.ttf");
+
+        textHP1.setFont(fontAr);
+        textHP2.setFont(fontAr);
+        textHP1.setCharacterSize(72);
+        textHP1.setFillColor(sf::Color::Red);
+        textHP2.setCharacterSize(72);
+        textHP1.setPosition({600.f,350.f});
+        textHP2.setPosition({600.f,800.f});
+        voievod1.updateHPText(textHP1);
+        voievod2.updateHPText(textHP2);
+
+        textureV1.loadFromFile("MichaelTheBrave.png");
+        textureV2.loadFromFile("VladTheImpaler.png");
+
+        spriteV1.setTexture(textureV1);
+
+        spriteV2.setTexture(textureV2);
+        spriteV2.setPosition(0, 450);
+
+        // Buttons for voievod1
+
+        Button btn1V1("Basic Attack",fontAr, {400, 50}, sf::Color::Black);
+        Button btn2V1("Powerful Attack",fontAr,{400, 50}, sf::Color::Black);
+        Button btn3V1("Battle of Calugareni",fontAr, {400, 50}, sf::Color::Green);
+        btn1V1.setPosition({20.f,25.f});
+        btn2V1.setPosition({20.f, 100.f});
+        btn3V1.setPosition({20.f, 175.f});
+        std::vector<Button> v1buttons = {btn1V1,btn2V1,btn3V1};
+
+        // Buttons for voievod2
+
+        Button btn1V2("Basic Attack",fontAr, {400, 50}, sf::Color::Black);
+        Button btn2V2("Powerful Attack",fontAr,{400, 50}, sf::Color::Black);
+        Button btn3V2("Night Attack at Targoviste",fontAr, {400, 50}, sf::Color::Black);
+        btn1V2.setPosition({20.f,450.f+25.f});
+        btn2V2.setPosition({20.f, 450.f+100.f});
+        btn3V2.setPosition({20.f, 450.f+175.f});
+        std::vector<Button> v2buttons = {btn1V2,btn2V2,btn3V2};
+
+        gameState = 1;
+        while (window.isOpen())
+        {
+            //Event polling
+            while (window.pollEvent(ev)){
+
+                switch (ev.type){
+                    case sf::Event::Closed:
+                        window.close();
+                        break;
+                    case sf::Event::KeyPressed:
+                        if (ev.key.code == sf::Keyboard::Escape)
+                            window.close();
+                        break;
+                    case sf::Event::MouseMoved:
+                        for (auto & v1button: v1buttons)
+                            if (v1button.isHovered(window)){
+                                v1button.setBackColor(sf::Color::Red);
+                            }
+                            else{
+                                v1button.setBackColor(sf::Color::Black);
+                            }
+                        for (auto & v2button: v2buttons)
+                            if (v2button.isHovered(window)){
+                                v2button.setBackColor(sf::Color::Red);
+                            }
+                            else{
+                                v2button.setBackColor(sf::Color::Black);
+                            }
+                        break;
+                    case sf::Event::MouseButtonPressed:
+                        std::cout << " Buton mouse apasat\n";
+                        if (gameState == 1) {
+                            for (unsigned int i = 0; i < v1buttons.size(); ++i)
+                                if (v1buttons[i].isHovered(window)) {
+                                    /// CHECK IF IT IS CORRECT ROUND!!!
+                                    /// PLAY AUDIO!!!!
+                                    voievod1.useSpell(i, voievod2);
+                                    voievod2.updateHPText(textHP2);
+                                    std::cout << voievod2;
+                                    gameState = 2;
+                                }
+                        }
+                        else if (gameState == 2) {
+                            for (unsigned int i = 0; i < v2buttons.size(); ++i)
+                                if (v2buttons[i].isHovered(window)) {
+                                    /// CHECK IF IT IS CORRECT ROUND!!!
+                                    /// PLAY AUDIO!!!!
+                                    voievod2.useSpell(i, voievod1);
+                                    voievod1.updateHPText(textHP1);
+                                    std::cout << voievod1;
+                                    gameState = 1;
+                                }
+                        }
+                    default:
+                        break;
+                }
+            }
+
+            //Update
+
+            //Render
+            window.clear(sf::Color::Green); //Clear old frame
+
+            window.draw(spriteV1);
+            window.draw(spriteV2);
+            window.draw(textHP1);
+            window.draw(textHP2);
+
+            for (auto & button: v1buttons)
+                button.drawTo(window);
+            for (auto & button: v2buttons)
+                button.drawTo(window);
+
+            //Draw your game
+            window.display(); //Tell app that window is done drawing
+
+            if(!(voievod1.isAlive() && voievod2.isAlive())){
+                gameState = 0;
+
+
+            }
+
+        }
+
+        if (voievod1.isAlive() && !voievod2.isAlive())
+            std::cout << "Voievod 1 - winner!\n";
+        else if (!voievod1.isAlive() && voievod2.isAlive())
+            std::cout << "Voievod 2 - winner!\n";
+        else std::cout <<"It's a tie!\n";
+    }
+
+
     void play(){
         std::cout << "The game has started! \n";
         std::cout << "Voievod 1: " << voievod1 << "\n" << "Voievod 2: " <<  voievod2 << "\n";
@@ -118,6 +324,8 @@ public:
 
     };
 
+
+
     Game(const Voievod &voievod1, const Voievod &voievod2) : voievod1(voievod1), voievod2(voievod2) {}
 
     virtual ~Game() {
@@ -131,16 +339,24 @@ int main() {
 
     Spell basicAttack = Spell("Basic Attack", 5, 20);
     Spell powerfulAttack = Spell("Powerful Attack", 10, 10);
-    Spell voievod1specificAttack = Spell("Battle of Calugareni Attack", 15, 40);
+    Spell voievod1specificAttack = Spell("Battle of Calugareni", 15, 40);
     Spell voievod2specificAttack = Spell("Night Attack at Targoviste", 15, 40);
+    Spell voievod3specificAttack = Spell("Vaslui Battle", 15, 40);
+    Spell voievod4specificAttack = Spell("Rovine Battle", 15, 40);
 
     /// std::vector<Spell> basicSpells = {basicAttack, powerfulAttack};
 
     Voievod v1 = Voievod("Michael The Brave", 89, 30, {basicAttack, powerfulAttack, voievod1specificAttack});
     Voievod v2 = Voievod("Vlad The Impaler", 93, 30, {basicAttack, powerfulAttack, voievod2specificAttack});
+    Voievod v3 = Voievod("Stephen the Great", 95, 30, {basicAttack, powerfulAttack, voievod3specificAttack});
+    Voievod v4 = Voievod("Mircea the Elder", 94, 30, {basicAttack, powerfulAttack, voievod4specificAttack});
+
+    std::vector<Voievod> voievozi = {v1, v2, v3, v4};
+
 
     Game game = Game(v1, v2);
 
+    game.createWindow();
     game.play();
 
     return 0;

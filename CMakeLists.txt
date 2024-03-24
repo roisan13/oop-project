@@ -9,9 +9,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "install_dir" CACHE PATH "..." FORCE)
+    set(CMAKE_INSTALL_PREFIX "install_dir" CACHE PATH "..." FORCE)
 endif()
 
 # disable sanitizers when releasing executables without explicitly requested debug info
@@ -67,6 +68,40 @@ endfunction()
 ###############################################################################
 
 # external dependencies with FetchContent
+
+include(FetchContent)
+FetchContent_Declare(SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 2.6.x)
+
+#function(sfml_set_custom_stdlib target)
+#    if(MSVC)
+#        target_compile_options(${target} PRIVATE "$<${debug_mode}:/fsanitize=address>")
+#    elseif(APPLE)
+#    elseif(UNIX)
+#        if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+#            target_compile_options(${target} PRIVATE -stdlib=libc++)
+#            target_link_libraries(${target} PRIVATE "-stdlib=libc++")
+#            if("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "14.")
+#                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+#                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
+#            elseif("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "13.")
+#                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins>")
+#                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins;-Wl,-rpath,tools/llvm-project/build/lib>")
+#            else()
+#                message("No matching Clang version to add sanitizer flags!")
+#            endif()
+#        endif()
+#    endif()
+#endfunction()
+
+FetchContent_MakeAvailable(SFML)
+
+#sfml_set_custom_stdlib(sfml-system)
+#sfml_set_custom_stdlib(sfml-window)
+#sfml_set_custom_stdlib(sfml-graphics)
+
+
 # include(FetchContent)
 #
 # NOTE: Also update env vars used for caching in
@@ -98,8 +133,8 @@ add_executable(${PROJECT_NAME} main.cpp
 # target definitions
 
 if(GITHUB_ACTIONS)
-  message("NOTE: GITHUB_ACTIONS defined")
-  target_compile_definitions(${PROJECT_NAME} PRIVATE GITHUB_ACTIONS)
+    message("NOTE: GITHUB_ACTIONS defined")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE GITHUB_ACTIONS)
 endif()
 
 ###############################################################################
@@ -130,7 +165,14 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE generated/include)
 # target_link_directories(${PROJECT_NAME} PRIVATE ${<SomeLib>_BINARY_DIR}/lib)
 # target_link_libraries(${PROJECT_NAME} <SomeLib>)
 
+#target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
+#target_link_directories(${PROJECT_NAME} PRIVATE ${SFML_BINARY_DIR}/lib)
+
+# target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/bin)
+target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system)
+
 ###############################################################################
+
 
 # copy binaries to "bin" folder; these are uploaded as artifacts on each release
 # update name in .github/workflows/cmake.yml:29 when changing "bin" name here

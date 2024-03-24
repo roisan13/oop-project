@@ -29,6 +29,8 @@ env:
   BIN_DIR: "bin"
   GEN_DIR: "generated"
 
+  SFML_VERSION: "2024-03-24-2.6.x"
+
 defaults:
   run:
     # Use a bash shell, so we can use the same syntax for environment variable
