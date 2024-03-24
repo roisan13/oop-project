@@ -97,9 +97,10 @@ endfunction()
 
 FetchContent_MakeAvailable(SFML)
 
-sfml_set_custom_stdlib(sfml-system)
-sfml_set_custom_stdlib(sfml-window)
+
 sfml_set_custom_stdlib(sfml-graphics)
+sfml_set_custom_stdlib(sfml-window)
+sfml_set_custom_stdlib(sfml-system)
 
 
 # include(FetchContent)
@@ -157,6 +158,11 @@ endif()
 set_custom_stdlib_and_sanitizers(${PROJECT_NAME} true)
 
 ###############################################################################
+find_package(OpenGL REQUIRED)
+include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
+
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
+###############################################################################
 
 # use SYSTEM so cppcheck/clang-tidy does not report warnings from these directories
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE generated/include)
@@ -166,9 +172,16 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE generated/include)
 # target_link_libraries(${PROJECT_NAME} <SomeLib>)
 
 
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include) #
-target_link_directories(${PROJECT_NAME} PRIVATE ${SFML_BINARY_DIR}/lib) #
+target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
+target_link_directories(${PROJECT_NAME} PRIVATE ${SFML_BINARY_DIR}/lib)
 target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system)
+if(WIN32)
+    add_custom_command(
+            TARGET ${PROJECT_NAME}
+            COMMENT "Copy OpenAL DLL"
+            PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            VERBATIM)
+endif()
 
 ###############################################################################
 

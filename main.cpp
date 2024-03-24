@@ -188,7 +188,7 @@ public:
 
         Button btn1V1("Basic Attack",fontAr, {400, 50}, sf::Color::Black);
         Button btn2V1("Powerful Attack",fontAr,{400, 50}, sf::Color::Black);
-        Button btn3V1("Battle of Calugareni",fontAr, {400, 50}, sf::Color::Green);
+        Button btn3V1("Battle of Calugareni",fontAr, {400, 50}, sf::Color::Black);
         btn1V1.setPosition({20.f,25.f});
         btn2V1.setPosition({20.f, 100.f});
         btn3V1.setPosition({20.f, 175.f});
