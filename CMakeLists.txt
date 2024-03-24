@@ -164,8 +164,7 @@ set_custom_stdlib_and_sanitizers(${PROJECT_NAME} true)
 ###############################################################################
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 
-target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES})
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE OpenGL::GL)
+# target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
 ###############################################################################
 
 # use SYSTEM so cppcheck/clang-tidy does not report warnings from these directories
@@ -178,7 +177,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE generated/include)
 
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
 target_link_directories(${PROJECT_NAME} PRIVATE ${SFML_BINARY_DIR}/lib)
-target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system)
+target_link_libraries(${PROJECT_NAME} OpenGL::GL sfml-graphics sfml-window sfml-system)
 if(WIN32)
     add_custom_command(
             TARGET ${PROJECT_NAME}
