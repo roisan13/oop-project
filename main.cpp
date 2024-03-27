@@ -8,7 +8,6 @@
 // #include <SFML/Audio.hpp>
 class Voievod;
 
-// TODO misschance implementation
 class Button{
 private:
     sf::RectangleShape button;
@@ -74,15 +73,23 @@ private:
     std::string name;
     int baseDamage;
     int critChance;  // critchance/100
+    int hitChance;
 
 public:
-    Spell(std::string name, int baseDamage, int critChance) : name(std::move(name)), baseDamage(baseDamage),
-                                                                     critChance(critChance) {}
+    Spell(std::string name, int baseDamage, int critChance, int hitChance) : name(std::move(name)), baseDamage(baseDamage),
+                                                                                    critChance(critChance),
+                                                                                    hitChance(hitChance) {}
 
 
     virtual ~Spell() = default;
 
     [[nodiscard]] int evalDamage() const{
+        if ( effolkronium::random_static::get(1, 100) > hitChance) {
+            std::cout << "Miss!";
+            return 0;
+
+        }
+
         if ( effolkronium::random_static::get(1, 100) > critChance)
             return baseDamage;
         else {
@@ -160,10 +167,13 @@ private:
 
 public:
     void createWindow(){
-        sf::RenderWindow window(sf::VideoMode(1280, 900), "Voievozi si Domnitori", sf::Style::Titlebar | sf::Style::Close);
+        sf::RenderWindow window(sf::VideoMode(1280, 900), "Voievozi si Domnitori");
         sf::Event ev{};
         sf::Font fontAr;
         sf::Text textHP1, textHP2;
+        sf::Text alertText;
+
+
         unsigned int gameState;
         fontAr.loadFromFile("arial.ttf");
 
@@ -184,6 +194,11 @@ public:
 
         spriteV2.setTexture(textureV2);
         spriteV2.setPosition(0, 450);
+
+        alertText.setFont(fontAr);
+        alertText.setCharacterSize(60);
+        alertText.setPosition({800.f, 350.f});
+        alertText.setString("Critical strike!");
 
         // Buttons for voievod1
 
@@ -244,7 +259,6 @@ public:
                                     /// PLAY AUDIO!!!!
                                     voievod1.useSpell(i, voievod2);
                                     voievod2.updateHPText(textHP2);
-                                    std::cout << voievod2;
                                     gameState = 2;
                                 }
                         }
@@ -255,7 +269,6 @@ public:
                                     /// PLAY AUDIO!!!!
                                     voievod2.useSpell(i, voievod1);
                                     voievod1.updateHPText(textHP1);
-                                    std::cout << voievod1;
                                     gameState = 1;
                                 }
                         }
@@ -267,12 +280,18 @@ public:
             //Update
 
             //Render
-            window.clear(sf::Color::Green); //Clear old frame
+            window.clear(sf::Color::Black); //Clear old frame
+
+            // alertText.move(0.f, -1.f);
+            // alertText.setFillColor(sf::Color(0, 255, 0, alpha));
 
             window.draw(spriteV1);
             window.draw(spriteV2);
             window.draw(textHP1);
             window.draw(textHP2);
+            // window.draw(alertText);
+
+
 
             for (auto & button: v1buttons)
                 button.drawTo(window);
@@ -284,8 +303,6 @@ public:
 
             if(!(voievod1.isAlive() && voievod2.isAlive())){
                 gameState = 0;
-
-
             }
 
         }
@@ -338,12 +355,12 @@ public:
 
 int main() {
 
-    Spell basicAttack = Spell("Basic Attack", 5, 20);
-    Spell powerfulAttack = Spell("Powerful Attack", 10, 10);
-    Spell voievod1specificAttack = Spell("Battle of Calugareni", 15, 40);
-    Spell voievod2specificAttack = Spell("Night Attack at Targoviste", 15, 40);
-    Spell voievod3specificAttack = Spell("Vaslui Battle", 15, 40);
-    Spell voievod4specificAttack = Spell("Rovine Battle", 15, 40);
+    Spell basicAttack = Spell("Basic Attack", 5, 30, 85);
+    Spell powerfulAttack = Spell("Powerful Attack",10, 20, 60);
+    Spell voievod1specificAttack = Spell("Battle of Calugareni", 15, 20, 25);
+    Spell voievod2specificAttack = Spell("Night Attack at Targoviste", 15, 20, 25);
+    Spell voievod3specificAttack = Spell("Vaslui Battle", 15, 20, 25);
+    Spell voievod4specificAttack = Spell("Rovine Battle", 15, 20, 25);
 
     /// std::vector<Spell> basicSpells = {basicAttack, powerfulAttack};
 
