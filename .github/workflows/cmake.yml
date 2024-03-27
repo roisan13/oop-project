@@ -71,7 +71,7 @@ jobs:
             xbase-clients \
             libxkbcommon-x11-0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-          X11Forwarding yes
+          ssh -X user@hostname
       
 
       # The flag CMAKE_EXPORT_COMPILE_COMMANDS generates compile_commands.json
@@ -137,7 +137,7 @@ jobs:
             xbase-clients \
             libxkbcommon-x11-0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-          X11Forwarding yes
+          ssh -X user@hostname
 
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
@@ -274,7 +274,7 @@ jobs:
             xbase-clients \
             libxkbcommon-x11-0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-          X11Forwarding yes
+          ssh -X user@hostname
 
       # Also see https://github.com/actions/runner-images/discussions/9446#discussioncomment-8668538
       - name: Install Clang 17
