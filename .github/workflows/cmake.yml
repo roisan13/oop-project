@@ -252,6 +252,22 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install ninja-build
+          sudo apt-get install --no-install-recommends \
+            libxrandr-dev \
+            libxcursor-dev \
+            libudev-dev \
+            libopenal-dev \
+            libflac-dev \
+            libvorbis-dev \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libdrm-dev \
+            libgbm-dev \
+            xorg \
+            xdotool \
+            openbox \
+            libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
 
       # Also see https://github.com/actions/runner-images/discussions/9446#discussioncomment-8668538
       - name: Install Clang 17
