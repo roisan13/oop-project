@@ -162,7 +162,15 @@ endif()
 set_custom_stdlib_and_sanitizers(${PROJECT_NAME} true)
 
 ###############################################################################
-include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
+# OpenGL
+find_package(X11)
+if(APPLE AND X11_FOUND)
+    set(CMAKE_FIND_FRAMEWORK NEVER)
+    find_package(OpenGL)
+    unset(CMAKE_FIND_FRAMEWORK)
+else()
+    find_package(OpenGL)
+endif()
 
 # target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
 ###############################################################################

@@ -8,6 +8,7 @@
 // #include <SFML/Audio.hpp>
 class Voievod;
 
+// TODO misschance implementation
 class Button{
 private:
     sf::RectangleShape button;
