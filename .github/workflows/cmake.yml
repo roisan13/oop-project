@@ -68,10 +68,9 @@ jobs:
             xorg \
             xdotool \
             openbox \
-            xbase-clients \
             libxkbcommon-x11-0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-          ssh -X user@hostname
+          ssh -X
       
 
       # The flag CMAKE_EXPORT_COMPILE_COMMANDS generates compile_commands.json
@@ -134,10 +133,9 @@ jobs:
             xorg \
             xdotool \
             openbox \
-            xbase-clients \
             libxkbcommon-x11-0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-          ssh -X user@hostname
+          ssh -X
 
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
@@ -271,10 +269,9 @@ jobs:
             xorg \
             xdotool \
             openbox \
-            xbase-clients \
             libxkbcommon-x11-0 \
             libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
-          ssh -X user@hostname
+          ssh -X
 
       # Also see https://github.com/actions/runner-images/discussions/9446#discussioncomment-8668538
       - name: Install Clang 17
