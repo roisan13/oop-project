@@ -69,10 +69,6 @@ endfunction()
 
 # external dependencies with FetchContent
 
-find_package(OpenGL REQUIRED)
-
-
-
 include(FetchContent)
 FetchContent_Declare(SFML
         GIT_REPOSITORY https://github.com/SFML/SFML.git
