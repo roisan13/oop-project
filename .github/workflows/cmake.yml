@@ -51,14 +51,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends cppcheck
 
-      # Install OpenGL, UDEV, OpenAL
+      # Install Linux dependencies
       - name: Install required libraries (OpenGL, OpenAL, Udev)
         run: |
-          sudo apt-get install libgl1-mesa-dev
-          sudo apt-get install libudev-dev
-          sudo apt-get install libalut-dev
-          sudo apt-get install libvorbis-dev
-          sudo apt-get install libsndfile1-dev
+          sudo apt-get install --no-install-recommends \
+            libxrandr-dev \
+            libxcursor-dev \
+            libudev-dev \
+            libopenal-dev \
+            libflac-dev \
+            libvorbis-dev \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libdrm-dev \
+            libgbm-dev \
+            xorg \
+            xdotool \
+            openbox \
+            libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
 
       # The flag CMAKE_EXPORT_COMPILE_COMMANDS generates compile_commands.json
       # which is used by cppcheck and clang-tidy
@@ -103,14 +114,25 @@ jobs:
           sudo apt-get install --no-install-recommends clang-tidy-17 libc++-17-dev libc++abi-17-dev
           
 
-      # Install OpenGL, UDEV, OpenAL
+      # Install Linux dependencies
       - name: Install required libraries (OpenGL, OpenAL, Udev)
         run: |
-          sudo apt-get install libgl1-mesa-dev
-          sudo apt-get install libudev-dev
-          sudo apt-get install libalut-dev
-          sudo apt-get install libvorbis-dev
-          sudo apt-get install libsndfile1-dev
+          sudo apt-get install --no-install-recommends \
+            libxrandr-dev \
+            libxcursor-dev \
+            libudev-dev \
+            libopenal-dev \
+            libflac-dev \
+            libvorbis-dev \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libdrm-dev \
+            libgbm-dev \
+            xorg \
+            xdotool \
+            openbox \
+            libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
 
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
