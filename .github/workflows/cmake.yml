@@ -51,11 +51,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends cppcheck
 
-      # Install OpenGL and UDEV
-      - name: Install OpenGL headers and libraries
+      # Install OpenGL, UDEV, OpenAL
+      - name: Install required libraries (OpenGL, OpenAL, Udev)
         run: |
           sudo apt-get install libgl1-mesa-dev
           sudo apt-get install libudev-dev
+          sudo apt-get install libalut-dev
 
       # The flag CMAKE_EXPORT_COMPILE_COMMANDS generates compile_commands.json
       # which is used by cppcheck and clang-tidy
@@ -100,11 +101,12 @@ jobs:
           sudo apt-get install --no-install-recommends clang-tidy-17 libc++-17-dev libc++abi-17-dev
           
 
-      # Install OpenGL and UDEV
-      - name: Install OpenGL headers and libraries
+      # Install OpenGL, UDEV, OpenAL
+      - name: Install required libraries (OpenGL, OpenAL, Udev)
         run: |
           sudo apt-get install libgl1-mesa-dev
           sudo apt-get install libudev-dev
+          sudo apt-get install libalut-dev
 
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
