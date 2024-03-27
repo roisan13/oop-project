@@ -79,34 +79,7 @@ FetchContent_Declare(SFML
         GIT_REPOSITORY https://github.com/SFML/SFML.git
         GIT_TAG 2.6.x)
 
-function(sfml_set_custom_stdlib target)
-    if(MSVC)
-        target_compile_options(${target} PRIVATE "$<${debug_mode}:/fsanitize=address>")
-    elseif(APPLE)
-    elseif(UNIX)
-        if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-            target_compile_options(${target} PRIVATE -stdlib=libc++)
-            target_link_libraries(${target} PRIVATE "-stdlib=libc++")
-            if("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "14.")
-                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
-                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=address,undefined>")
-            elseif("${CMAKE_CXX_COMPILER_VERSION}" MATCHES "13.")
-                target_compile_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins>")
-                target_link_options(${target} PRIVATE "$<${debug_mode}:-fsanitize=memory,undefined;-fsanitize-recover=memory,undefined;-fsanitize-memory-track-origins;-Wl,-rpath,tools/llvm-project/build/lib>")
-            else()
-                message("No matching Clang version to add sanitizer flags!")
-            endif()
-        endif()
-    endif()
-endfunction()
-
 FetchContent_MakeAvailable(SFML)
-
-
-sfml_set_custom_stdlib(sfml-graphics)
-sfml_set_custom_stdlib(sfml-window)
-sfml_set_custom_stdlib(sfml-system)
-
 
 # include(FetchContent)
 #
