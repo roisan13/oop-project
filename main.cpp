@@ -160,7 +160,7 @@ private:
 
 public:
     void createWindow(){
-        sf::RenderWindow window(sf::VideoMode(1280, 900), "My first game", sf::Style::Titlebar | sf::Style::Close);
+        sf::RenderWindow window(sf::VideoMode(1280, 900), "Voievozi si Domnitori", sf::Style::Titlebar | sf::Style::Close);
         sf::Event ev{};
         sf::Font fontAr;
         sf::Text textHP1, textHP2;
