@@ -51,6 +51,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends cppcheck
 
+      # OpenGL is needed for SFML
+      - name: Install OpenGL headers and libraries
+        run: |
+          sudo apt-get install libgl1-mesa-dev
+
       # The flag CMAKE_EXPORT_COMPILE_COMMANDS generates compile_commands.json
       # which is used by cppcheck and clang-tidy
       - name: Configure CMake
@@ -92,6 +97,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --no-install-recommends clang-tidy-17 libc++-17-dev libc++abi-17-dev
+          
+
+      # OpenGL is needed for SFML
+      - name: Install OpenGL headers and libraries
+        run: |
+          sudo apt-get install libgl1-mesa-dev
 
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
