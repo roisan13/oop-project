@@ -51,10 +51,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends cppcheck
 
-      # OpenGL is needed for SFML
+      # Install OpenGL and UDEV
       - name: Install OpenGL headers and libraries
         run: |
           sudo apt-get install libgl1-mesa-dev
+          sudo apt-get install libudev-dev
 
       # The flag CMAKE_EXPORT_COMPILE_COMMANDS generates compile_commands.json
       # which is used by cppcheck and clang-tidy
@@ -99,10 +100,11 @@ jobs:
           sudo apt-get install --no-install-recommends clang-tidy-17 libc++-17-dev libc++abi-17-dev
           
 
-      # OpenGL is needed for SFML
+      # Install OpenGL and UDEV
       - name: Install OpenGL headers and libraries
         run: |
           sudo apt-get install libgl1-mesa-dev
+          sudo apt-get install libudev-dev
 
       - name: Configure CMake
         uses: ./.github/actions/configure-cmake
