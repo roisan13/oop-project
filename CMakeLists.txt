@@ -66,6 +66,12 @@ function(set_custom_stdlib_and_sanitizers target add_apple_asan)
 endfunction()
 
 ###############################################################################
+# OpenGL
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
+
+
+###############################################################################
 # external dependencies with FetchContent
 
 include(FetchContent)
@@ -117,12 +123,7 @@ sfml_set_custom_stdlib(sfml-system)
 # FetchContent_MakeAvailable(SomeLib)
 
 ###############################################################################
-# OpenGL
-find_package(OpenGL REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
-
-###############################################################################
 
 # find_package(Threads REQUIRED
 
