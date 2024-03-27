@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+# option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "install_dir" CACHE PATH "..." FORCE)
@@ -66,7 +66,6 @@ function(set_custom_stdlib_and_sanitizers target add_apple_asan)
 endfunction()
 
 ###############################################################################
-
 # external dependencies with FetchContent
 
 include(FetchContent)
@@ -118,10 +117,14 @@ sfml_set_custom_stdlib(sfml-system)
 # FetchContent_MakeAvailable(SomeLib)
 
 ###############################################################################
+# OpenGL
+find_package(OpenGL REQUIRED)
+include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
-# external dependencies with find_package
 
-# find_package(Threads REQUIRED)
+###############################################################################
+
+# find_package(Threads REQUIRED
 
 ###############################################################################
 
@@ -159,11 +162,6 @@ set_custom_stdlib_and_sanitizers(${PROJECT_NAME} true)
 
 ###############################################################################
 
-# OpenGL
-
-# target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
-###############################################################################
-
 # use SYSTEM so cppcheck/clang-tidy does not report warnings from these directories
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE generated/include)
 # target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ext/<SomeHppLib>/include)
@@ -174,7 +172,7 @@ target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE generated/include)
 
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${SFML_SOURCE_DIR}/include)
 target_link_directories(${PROJECT_NAME} PRIVATE ${SFML_BINARY_DIR}/lib)
-target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system)
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} sfml-graphics sfml-window sfml-system)
 
 ###############################################################################
 
