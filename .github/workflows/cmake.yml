@@ -52,7 +52,7 @@ jobs:
           sudo apt-get install --no-install-recommends cppcheck
 
       # Install Linux dependencies
-      - name: Install required libraries (OpenGL, OpenAL, Udev)
+      - name: Install linux dependencies
         run: |
           sudo apt-get install --no-install-recommends \
             libxrandr-dev \
@@ -114,8 +114,8 @@ jobs:
           sudo apt-get install --no-install-recommends clang-tidy-17 libc++-17-dev libc++abi-17-dev
           
 
-      # Install Linux dependencies
-      - name: Install required libraries (OpenGL, OpenAL, Udev)
+      # Install Linux dependencies for SFML
+      - name: Install Linux dependencies
         run: |
           sudo apt-get install --no-install-recommends \
             libxrandr-dev \

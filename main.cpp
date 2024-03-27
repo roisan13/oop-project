@@ -352,8 +352,7 @@ int main() {
     Voievod v3 = Voievod("Stephen the Great", 95, 30, {basicAttack, powerfulAttack, voievod3specificAttack});
     Voievod v4 = Voievod("Mircea the Elder", 94, 30, {basicAttack, powerfulAttack, voievod4specificAttack});
 
-    std::vector<Voievod> voievozi = {v1, v2, v3, v4};
-
+    // std::vector<Voievod> voievozi = {v1, v2, v3, v4};
 
     Game game = Game(v1, v2);
 
