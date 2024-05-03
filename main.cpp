@@ -1,380 +1,516 @@
-#include <iostream>
-#include <utility>
+#include <fstream>
 #include <vector>
-#include <string>
-#include <random.hpp>
-#include <SFML/Graphics.hpp>
-#include <SFML/Network.hpp>
-// #include <SFML/Audio.hpp>
-class Voievod;
+#include <iostream>
 
-class Button{
+template <class V> class FibonacciHeap;
+
+const double INF_fibonacci_heap = 2000000001;
+
+template <class V> class node {
 private:
-    sf::RectangleShape button;
-    sf::Text text;
-
+    node<V>* left;
+    node<V>* right;
+    node<V>* child;
+    node<V>* parent;
+    V val;
+    bool marked;
+    int degree;
 public:
-    Button()= default;
-    Button(const std::string& t, sf::Font &font, sf::Vector2f size, sf::Color bgColor){
-
-        text.setString(t);
-        text.setCharacterSize(24);
-        text.setFont(font);
-
-        button.setSize(size);
-        button.setFillColor(bgColor);
+    friend class FibonacciHeap<V>;
+    explicit node(V value){
+        left = this;
+        right = this;
+        child = nullptr;
+        parent = nullptr;
+        degree = 0;
+        val = value;
+        marked = false;
     }
 
-
-
-    void setBackColor(sf::Color color_){
-        button.setFillColor(color_);
-    }
-
-    /*
-    void setTextColor(sf::Color color_){
-        text.setFillColor(color_);
-    }
-
-    void setFont(sf::Font &font){
-        text.setFont(font);
-    }
-     */
-
-    void setPosition(sf::Vector2f pos){
-        button.setPosition(pos);
-
-        // center button?!
-        float xPos = (pos.x + button.getLocalBounds().width / 2) - (text.getLocalBounds().width / 2);
-        float yPos = (pos.y + button.getLocalBounds().height / 2) - (text.getLocalBounds().height / 2);
-
-        text.setPosition({xPos, yPos});
-    }
-
-    void drawTo(sf::RenderWindow &window) {
-        window.draw(button);
-        window.draw(text);
-    }
-
-    bool isHovered(sf::RenderWindow &window) {
-        float mouseX = float(sf::Mouse::getPosition(window).x);
-        float mouseY = float(sf::Mouse::getPosition(window).y);
-
-        float btnPosX = button.getPosition().x;
-        float btnPosY = button.getPosition().y;
-        float btnRightMargin = btnPosX + button.getLocalBounds().width;
-        float btnDownMargin = btnPosY + button.getLocalBounds().height;
-
-        return (mouseX < btnRightMargin && mouseX > btnPosX && mouseY < btnDownMargin && mouseY > btnPosY);
-    }
+    ~node() = default;
 };
-class Spell{
+
+template <class V> class FibonacciHeap{
 private:
-    std::string name;
-    int baseDamage;
-    int critChance;  // critchance/100
-    int hitChance;
-
-public:
-    Spell(std::string name, int baseDamage, int critChance, int hitChance) : name(std::move(name)), baseDamage(baseDamage),
-                                                                                    critChance(critChance),
-                                                                                    hitChance(hitChance) {}
+    node<V>* maxNode;
+    node<V>* rootList;
 
 
-    virtual ~Spell() = default;
+    node<V>* constructNode(V value){
+        auto* newNode = new node<V>;
+        newNode->left = newNode;
+        newNode->right = newNode;
+        newNode->child = nullptr;
+        newNode->parent = nullptr;
+        newNode->degree = 0;
+        newNode->val = value;
+        newNode->marked = false;
+        return newNode;
+    }
 
-    [[nodiscard]] int evalDamage() const{
-        if ( effolkronium::random_static::get(1, 100) > hitChance) {
-            std::cout << "Miss!";
-            return 0;
-
-        }
-
-        if ( effolkronium::random_static::get(1, 100) > critChance)
-            return baseDamage;
+    void mergeWithRoot(node<V>* mergedNode){
+        if (rootList == nullptr)
+            rootList = mergedNode;
         else {
-            std::cout << "Critical strike! \n";
-            return 2 * baseDamage;
+            mergedNode->right = rootList;
+            mergedNode->left = rootList->left;
+            rootList->left->right = mergedNode;
+            rootList->left = mergedNode;
         }
     }
 
-
-    friend std::ostream &operator<<(std::ostream &os, const Spell &spell) {
-        os << spell.name;
-
-        // Default os
-        // os << "name: " << spell.name << " baseDamage: " << spell.baseDamage << " critChance: " << spell.critChance << '\n';
-        return os;
+    void removeFromRoot(node<V>* removedNode){
+        if (removedNode == rootList)
+            rootList = removedNode->right;
+        removedNode->left->right = removedNode->right;
+        removedNode->right->left = removedNode->left;
     }
 
-};
+    void removeFromChildren(node<V>* removedChild, node<V>* parent){
+        if (parent->child == parent->child->right)
+            parent->child = nullptr;
+        else if (parent->child == removedChild) {
+            parent->child = removedChild->right;
+            removedChild->right->parent = parent;
+        }
+        removedChild->left->right = removedChild->right;
+        removedChild->right->left = removedChild->left;
 
-/// class VoievodAttack : public Spell{};
+    }
 
-class Voievod {
-private:
-    std::string name;
-    int strength;
-    int healthPoints;
-    std::vector<Spell> spells;
+    void mergeWithChild(node<V>* newChild, node<V>* parent){
+        if (parent->child == nullptr)
+            parent->child = newChild;
+        else{
+            // Inserez mereu la dreapta primului copil
+            newChild->right = parent->child->right;
+            newChild->left = parent->child;
+            parent->child->right->left = newChild;
+            parent->child->right = newChild;
+        }
+    }
+
+    void heapLink(node<V>* child, node<V>* parent){
+        removeFromRoot(child);
+        child->left = child->right = child;
+        parent->degree++;
+        mergeWithChild(child, parent);
+        child->parent = parent;
+        child->marked = false;
+    }
+
+    void cleanUp(){
+        // magic number 128 = 64 bits x 2
+        // 64 seems to be working just fine tho
+        // increase to 128 for bigger values?
+        std::vector< node<V>* > degreeTable = {64, nullptr};
+        std::vector< node<V>* > rootNodes = {rootList};
+
+        node<V>* p = rootList->right;
+        while (p != rootList) {
+            rootNodes.push_back(p);
+            p = p->right;
+        }
+
+        for (auto rootNode : rootNodes){
+            int deg = rootNode->degree;
+            while(degreeTable[deg] != nullptr){
+                node<V>* degNode = degreeTable[deg];
+                if(rootNode->val < degNode->val)
+                    std::swap(rootNode, degNode);
+                heapLink(degNode, rootNode);
+                degreeTable[deg] = nullptr;
+                deg++;
+            }
+            degreeTable[deg] = rootNode;
+        }
+        for(int i = 0; i < 64; i++)
+            if (degreeTable[i] != nullptr)
+                if( degreeTable[i]->val > maxNode->val)
+                    maxNode = degreeTable[i];
+    }
+
+    void cut(node<V>* removedChild, node<V>* parent){
+        removeFromChildren(removedChild, parent);
+        parent->degree -= 1;
+        mergeWithRoot(removedChild);
+        removedChild->parent = nullptr;
+        removedChild->marked = false;
+    }
+
+    void cascadingCut(node<V>* currentNode){
+        node<V>* currentParent = currentNode->parent;
+        if (currentParent != nullptr) {
+            if (!currentNode->marked)
+                currentNode->marked = true;
+            else {
+                cut(currentNode, currentParent);
+                cascadingCut(currentParent);
+            }
+        }
+    }
+
+    void freeMemory(node<V>* x){
+        if ( x != nullptr )
+        {
+            node<V>* t1 = x;
+            do{
+                node<V>* t2 = t1;
+                t1 = t1->right;
+                freeMemory(t2->child);
+                delete t2;
+            } while(t1 != x);
+        }
+    }
 
 public:
-    Voievod(std::string name_, int strength_, int healthPoints_, const std::vector<Spell> &spells_) : name(std::move(name_)),
-                                                                                                         strength(
-                                                                                                                 strength_),
-                                                                                                         healthPoints(
-                                                                                                                 healthPoints_),
-                                                                                                         spells(spells_) {}
+    FibonacciHeap(){
+        maxNode = nullptr;
+        rootList = nullptr;
+    }
 
-    virtual ~Voievod() = default;
+    ~FibonacciHeap(){
+        freeMemory(rootList);
+        rootList = nullptr;
+        maxNode = nullptr;
+    }
 
+    void insert(V insertedValue){
+        std::cout<<"INSERT\n";
+        node<V>* insertedNode = new node(insertedValue);
 
-    Voievod& operator=(const Voievod&) = default;
+        mergeWithRoot(insertedNode);
 
+        if (maxNode == nullptr || maxNode->val < insertedValue)
+            maxNode = insertedNode;
+    }
 
+    void merge(FibonacciHeap<V>* other) {
 
-    friend std::ostream &operator<<(std::ostream &os, const Voievod &voievod) {
-        os << voievod.name << " strength: " << voievod.strength << " healthPoints: " << voievod.healthPoints << '\n';
-        return os;
+        if (rootList == nullptr){
+            rootList = other->rootList;
+            maxNode = other->maxNode;
+        }
+        else if(other->rootList != nullptr) {
+
+            node<V>* last = other->rootList->left;   // ultimul nod dupa merge
+            other->rootList->left = rootList->left;  // rootList->left = ultimul din primul heap
+            rootList->left->right = other->rootList; // ult din primul heap ->left = other.rootList
+            rootList->left = last;                   // rootList->left = ultimul nod dupa merge
+            rootList->left->right = rootList;        // ultimul nod dupam merge ->right = rootList
+
+            // maxNode = max(minNode, other.minNode)
+            if (maxNode->val < other->maxNode->val)
+                maxNode = other->maxNode;
+        }
+    }
+
+    V getMaximum(){
+        /*
+        std::cout << maxNode->val << "\n";
+        if (maxNode != NULL)
+            return maxNode->val;
+        */
+        std::cout << "GETMIN\n";
+        return 0;
     };
 
-    void printSpells(){
-        for (unsigned int i = 0; i < spells.size(); ++i)
-            std::cout << i + 1 << ". " << spells[i] << '\n';
-    }
+    V extractMax(){
+        if (!maxNode)
+            return 0;
 
-    [[nodiscard]] bool isAlive() const{
-        return (healthPoints > 0);
-    }
-    void updateHPText(sf::Text &text) const{
-        text.setString(std::to_string(healthPoints));
+        std::cout << "MAX" << " " << maxNode->val << "\n";
+        node<V>* z = maxNode;
+        V maxVal = 0;
 
-    }
+        if (z != nullptr){
+            if (z->child != nullptr) {
+                // AICI PT UN CAZ AM Z->DEGREE MAI MARE CU 1 DECAT AR TREBUI SA FIE
 
-    void useSpell(unsigned int spellIndex, Voievod& enemy){
-        if ( spellIndex < spells.size() )
-            enemy.healthPoints -= spells[spellIndex].evalDamage();
-        else std::cout << "It didn't work: Wrong spellIndex provided!\n";
-    }
-};
-
-class Game{
-private:
-    Voievod voievod1, voievod2;
-    sf::Sprite spriteV1, spriteV2;
-    sf::Texture textureV1, textureV2;
+                std::vector<node<V> *> children = {};
+                node<V> *currentChild = z->child;
+                do{
+                    auto temp = currentChild;
+                    children.push_back(temp);
+                    currentChild = currentChild->right;
+                }while(currentChild != z->child);
 
 
-public:
-    void createWindow(){
-        sf::RenderWindow window(sf::VideoMode(1280, 900), "Voievozi si Domnitori");
-        sf::Event ev{};
-        sf::Font fontAr;
-        sf::Text textHP1, textHP2;
-        sf::Text alertText;
-
-
-        unsigned int gameState;
-        fontAr.loadFromFile("arial.ttf");
-
-        textHP1.setFont(fontAr);
-        textHP2.setFont(fontAr);
-        textHP1.setCharacterSize(72);
-        // textHP1.setFillColor(sf::Color::Red);
-        textHP2.setCharacterSize(72);
-        textHP1.setPosition({600.f,350.f});
-        textHP2.setPosition({600.f,800.f});
-        voievod1.updateHPText(textHP1);
-        voievod2.updateHPText(textHP2);
-
-        textureV1.loadFromFile("MichaelTheBrave.png");
-        textureV2.loadFromFile("VladTheImpaler.png");
-
-        spriteV1.setTexture(textureV1);
-
-        spriteV2.setTexture(textureV2);
-        spriteV2.setPosition(0, 450);
-
-        alertText.setFont(fontAr);
-        alertText.setCharacterSize(60);
-        alertText.setPosition({800.f, 350.f});
-        alertText.setString("Critical strike!");
-
-        // Buttons for voievod1
-
-        Button btn1V1("Basic Attack",fontAr, {400, 50}, sf::Color::Black);
-        Button btn2V1("Powerful Attack",fontAr,{400, 50}, sf::Color::Black);
-        Button btn3V1("Battle of Calugareni",fontAr, {400, 50}, sf::Color::Black);
-        btn1V1.setPosition({20.f,25.f});
-        btn2V1.setPosition({20.f, 100.f});
-        btn3V1.setPosition({20.f, 175.f});
-        std::vector<Button> v1buttons = {btn1V1,btn2V1,btn3V1};
-
-        // Buttons for voievod2
-
-        Button btn1V2("Basic Attack",fontAr, {400, 50}, sf::Color::Black);
-        Button btn2V2("Powerful Attack",fontAr,{400, 50}, sf::Color::Black);
-        Button btn3V2("Night Attack at Targoviste",fontAr, {400, 50}, sf::Color::Black);
-        btn1V2.setPosition({20.f,450.f+25.f});
-        btn2V2.setPosition({20.f, 450.f+100.f});
-        btn3V2.setPosition({20.f, 450.f+175.f});
-        std::vector<Button> v2buttons = {btn1V2,btn2V2,btn3V2};
-
-        gameState = 1;
-        while (window.isOpen())
-        {
-            //Event polling
-            while (window.pollEvent(ev)){
-
-                switch (ev.type){
-                    case sf::Event::Closed:
-                        window.close();
-                        break;
-                    case sf::Event::KeyPressed:
-                        if (ev.key.code == sf::Keyboard::Escape)
-                            window.close();
-                        break;
-                    case sf::Event::MouseMoved:
-                        for (auto & v1button: v1buttons)
-                            if (v1button.isHovered(window)){
-                                v1button.setBackColor(sf::Color::Red);
-                            }
-                            else{
-                                v1button.setBackColor(sf::Color::Black);
-                            }
-                        for (auto & v2button: v2buttons)
-                            if (v2button.isHovered(window)){
-                                v2button.setBackColor(sf::Color::Red);
-                            }
-                            else{
-                                v2button.setBackColor(sf::Color::Black);
-                            }
-                        break;
-                    case sf::Event::MouseButtonPressed:
-                        std::cout << " Buton mouse apasat\n";
-                        if (gameState == 1) {
-                            for (unsigned int i = 0; i < v1buttons.size(); ++i)
-                                if (v1buttons[i].isHovered(window)) {
-                                    /// CHECK IF IT IS CORRECT ROUND!!!
-                                    /// PLAY AUDIO!!!!
-                                    voievod1.useSpell(i, voievod2);
-                                    voievod2.updateHPText(textHP2);
-                                    gameState = 2;
-                                }
-                        }
-                        else if (gameState == 2) {
-                            for (unsigned int i = 0; i < v2buttons.size(); ++i)
-                                if (v2buttons[i].isHovered(window)) {
-                                    /// CHECK IF IT IS CORRECT ROUND!!!
-                                    /// PLAY AUDIO!!!!
-                                    voievod2.useSpell(i, voievod1);
-                                    voievod1.updateHPText(textHP1);
-                                    gameState = 1;
-                                }
-                        }
-                    default:
-                        break;
+                for (auto child: children) {
+                    mergeWithRoot(child);
+                    child->parent = nullptr;
                 }
             }
 
-            //Update
+            removeFromRoot(z);
 
-            //Render
-            window.clear(sf::Color::Black); //Clear old frame
-
-            // alertText.move(0.f, -1.f);
-            // alertText.setFillColor(sf::Color(0, 255, 0, alpha));
-
-            window.draw(spriteV1);
-            window.draw(spriteV2);
-            window.draw(textHP1);
-            window.draw(textHP2);
-            // window.draw(alertText);
-
-
-
-            for (auto & button: v1buttons)
-                button.drawTo(window);
-            for (auto & button: v2buttons)
-                button.drawTo(window);
-
-            //Draw your game
-            window.display(); //Tell app that window is done drawing
-
-            if(!(voievod1.isAlive() && voievod2.isAlive())){
-                gameState = 0;
+            if (z == z->right){
+                // Am extras dintr-un heap cu un singur element (care era si minim)
+                maxNode = nullptr;
+                rootList = nullptr;
+            }
+            else{
+                maxNode = z->right;
+                cleanUp();
             }
 
-        }
-
-        if (voievod1.isAlive() && !voievod2.isAlive())
-            std::cout << "Voievod 1 - winner!\n";
-        else if (!voievod1.isAlive() && voievod2.isAlive())
-            std::cout << "Voievod 2 - winner!\n";
-        else std::cout <<"It's a tie!\n";
-    }
-
-
-    void play(){
-        std::cout << "The game has started! \n";
-        std::cout << "Voievod 1: " << voievod1 << "\n" << "Voievod 2: " <<  voievod2 << "\n";
-
-        while(voievod1.isAlive() && voievod2.isAlive()){
-
-            std::cout << "Voievod1, choose your spell:\n";
-            voievod1.printSpells();
-            int *spellIndex_ = new int;
-            std::cin >> *spellIndex_;
-            // aici ar trebui un if in care sa se citeasca frumos spellIndex, fara erori
-            voievod1.useSpell(*spellIndex_-1, voievod2);
-            std::cout << "It worked! " << voievod2;
-
-            std::cout << "Voievod2, choose your spell:\n";
-            voievod2.printSpells();
-            std::cin >> *spellIndex_;
-            // alt if frumos, posibil o functie
-            voievod2.useSpell(*spellIndex_-1, voievod1);
-            std::cout << "It worked! " << voievod1;
-
-            delete spellIndex_;
+            maxVal = z->val;
+            //delete z;
 
         }
-
-    };
-
-
-
-    Game(const Voievod &voievod1, const Voievod &voievod2) : voievod1(voievod1), voievod2(voievod2) {}
-
-    virtual ~Game() {
-        std::cout << "\nGame over! \n";
+        return maxVal;
     }
+
+    void increaseValue(node<V>* incNode, V incValue){
+        if (incValue < incNode->val)
+            return;
+        incNode->val = incValue;
+        node<V>* parentNode = incNode->parent;
+        if (parentNode != NULL && incNode->val > parentNode->val){
+            cut(incNode, parentNode);
+            cascadingCut(parentNode);
+        }
+        if (incValue > maxNode->val)
+            maxNode = incNode;
+
+    }
+
+    node<V>* deleteNode(node<V>* delNode){
+        decreaseValue(delNode, INF_fibonacci_heap);
+        return extractMax();
+    }
+
 };
 
 
+node<V>* constructNode(V value){
+    auto* newNode = new node<V>;
+    newNode->left = newNode;
+    newNode->right = newNode;
+    newNode->child = nullptr;
+    newNode->parent = nullptr;
+    newNode->degree = 0;
+    newNode->val = value;
+    newNode->marked = false;
+    return newNode;
+}
+void mergeWithRoot(node<V>* mergedNode){
+    if (rootList == nullptr)
+        rootList = mergedNode;
+    else {
+        mergedNode->right = rootList;
+        mergedNode->left = rootList->left;
+        rootList->left->right = mergedNode;
+        rootList->left = mergedNode;
+    }
+}
+
+void removeFromRoot(node<V>* removedNode){
+    if (removedNode == rootList)
+        rootList = removedNode->right;
+    removedNode->left->right = removedNode->right;
+    removedNode->right->left = removedNode->left;
+}
+
+void removeFromChildren(node<V>* removedChild, node<V>* parent){
+    if (parent->child == parent->child->right)
+        parent->child = nullptr;
+    else if (parent->child == removedChild) {
+        parent->child = removedChild->right;
+        removedChild->right->parent = parent;
+    }
+    removedChild->left->right = removedChild->right;
+    removedChild->right->left = removedChild->left;
+
+}
+
+void mergeWithChild(node<V>* newChild, node<V>* parent){
+
+    if (parent->child == nullptr)
+        parent->child = newChild;
+    else{
+        // Inserez mereu la dreapta primului copil
+        newChild->right = parent->child->right;
+        newChild->left = parent->child;
+        parent->child->right->left = newChild;
+        parent->child->right = newChild;
+    }
+}
+
+void heapLink(node<V>* child, node<V>* parent){
+    removeFromRoot(child);
+    child->left = child->right = child;
+    parent->degree++;
+    mergeWithChild(child, parent);
+    child->parent = parent;
+
+
+}
+
+void cleanUp(){
+    // magic number 128 = 64 bits x 2
+    std::vector< node<V>* > degreeTable = {64, nullptr};
+    std::vector< node<V>* > rootNodes = {rootList};
+
+    node<V>* p = rootList->right;
+    while (p != rootList) {
+
+
+        //std::cout << p->val << " . ";
+
+
+
+        rootNodes.push_back(p);
+        p = p->right;
+    }
+
+    for (auto rootNode : rootNodes){
+        int deg = rootNode->degree;
+        //std::cout << rootNodes.size() << " -> size \n";
+        while(degreeTable[deg] != nullptr){
+            node<V>* degNode = degreeTable[deg];
+
+            if(rootNode->val < degNode->val)
+                std::swap(rootNode, degNode);
+
+            heapLink(degNode, rootNode);
+
+
+            degreeTable[deg] = nullptr;
+            deg++;
+
+
+
+        }
+        degreeTable[deg] = rootNode;
+    }
+    for(int i = 0; i < 64; i++)
+        if (degreeTable[i] != nullptr)
+            if( degreeTable[i]->val > maxNode->val)
+                maxNode = degreeTable[i];
+}
+
+public:
+FibonacciHeap(){
+    maxNode = nullptr;
+    rootList = nullptr;
+}
+~FibonacciHeap() = default;
+
+void insert(V insertedValue){
+    node<V>* insertedNode = constructNode(insertedValue);
+
+    mergeWithRoot(insertedNode);
+
+    if (maxNode == nullptr || maxNode->val < insertedValue)
+        maxNode = insertedNode;
+}
+
+void merge(FibonacciHeap<V>* other) {
+
+    if (rootList == nullptr){
+        rootList = other->rootList;
+        maxNode = other->maxNode;
+    }
+    else if(other->rootList != nullptr) {
+
+        node<V>* last = other->rootList->left;   // ultimul nod dupa merge
+        other->rootList->left = rootList->left;  // rootList->left = ultimul din primul heap
+        rootList->left->right = other->rootList; // ult din primul heap ->left = other.rootList
+        rootList->left = last;                   // rootList->left = ultimul nod dupa merge
+        rootList->left->right = rootList;        // ultimul nod dupam merge ->right = rootList
+
+        // maxNode = max(minNode, other.minNode)
+        if (maxNode->val < other->maxNode->val)
+            maxNode = other->maxNode;
+    }
+}
+
+V getMaximum(){
+    return maxNode->val;
+};
+
+
+V extractMax(){
+    node<V>* z = maxNode;
+    V maxVal = 0;
+
+    if (z != nullptr){
+        if (z->child != nullptr) {
+            node<V>* p = rootList->right;
+
+            // AICI PT UN CAZ AM Z->DEGREE MAI MARE CU 1 DECAT AR TREBUI SA FIE
+            // NU-MI DAU SEAMA DE CE
+            std::vector<node<V> *> children = {};
+            node<V> *currentChild = z->child;
+            do{
+                auto temp = currentChild;
+                // std::cout << currentChild->val << "-> child. \n";
+                children.push_back(temp);
+                currentChild = currentChild->right;
+            }while(currentChild != z->child);
+
+            for (auto child: children) {
+                mergeWithRoot(child);
+                child->parent = nullptr;
+            }
+        }
+
+        removeFromRoot(z);
+
+        if (z == z->right){
+            // Am extras dintr-un heap cu un singur element (care era si minim)
+            maxNode = nullptr;
+            rootList = nullptr;
+        }
+        else{
+            maxNode = z->right;
+            cleanUp();
+        }
+
+        maxVal = z->val;
+        delete z;
+    }
+    return maxVal;
+}
+
+};
+
+std::ifstream f("mergeheap.in");
+std::ofstream g("mergeheap.out");
+
 
 int main() {
+    int N,Q;
+    std::vector< FibonacciHeap<int>* > heapArray;
+    f >> N >> Q;
+    for(int i = 0; i < N + 1; ++i)
+    {
+        heapArray.push_back(new FibonacciHeap<int>());
+    }
+    for(int i = 0; i < Q; ++i)
+    {
+        int tipOperatie;
+        f >> tipOperatie;
+        if (tipOperatie == 1){
+            int multime, val;
+            f >> multime >> val;
+            heapArray[multime]->insert(val);
 
-    Spell basicAttack = Spell("Basic Attack", 5, 30, 85);
-    Spell powerfulAttack = Spell("Powerful Attack",10, 20, 60);
-    Spell voievod1specificAttack = Spell("Battle of Calugareni", 15, 20, 25);
-    Spell voievod2specificAttack = Spell("Night Attack at Targoviste", 15, 20, 25);
-    Spell voievod3specificAttack = Spell("Vaslui Battle", 15, 20, 25);
-    Spell voievod4specificAttack = Spell("Rovine Battle", 15, 20, 25);
+        }
+        else if (tipOperatie == 2){
+            int multime;
+            f >> multime;
+            g << heapArray[multime]->extractMax() << "\n";
+        }
+        else if (tipOperatie == 3){
+            int mult1, mult2;
+            f >> mult1 >> mult2;
+            heapArray[mult1]->merge(heapArray[mult2]);
+            delete heapArray[mult2];
+            heapArray[mult2] = new FibonacciHeap<int>();
 
-    /// std::vector<Spell> basicSpells = {basicAttack, powerfulAttack};
-
-    Voievod v1 = Voievod("Michael The Brave", 89, 30, {basicAttack, powerfulAttack, voievod1specificAttack});
-    Voievod v2 = Voievod("Vlad The Impaler", 93, 30, {basicAttack, powerfulAttack, voievod2specificAttack});
-    Voievod v3 = Voievod("Stephen the Great", 95, 30, {basicAttack, powerfulAttack, voievod3specificAttack});
-    Voievod v4 = Voievod("Mircea the Elder", 94, 30, {basicAttack, powerfulAttack, voievod4specificAttack});
-
-    // std::vector<Voievod> voievozi = {v1, v2, v3, v4};
-
-    Game game = Game(v1, v2);
-
-    game.createWindow();
-    game.play();
-
+        }
+    }
     return 0;
 }
